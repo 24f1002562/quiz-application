@@ -3,12 +3,18 @@ from flask_login import *
 from werkzeug.security import *
 from .models import User
 from . import db
+from .models import User 
+from datetime import datetime
 
 auth = Blueprint('auth', __name__)
 
+
+@auth.route('/')
+def home():
+    return render_template('home.html')
 @auth.route('/login', methods=['GET','POST'])
 def login():
-    if method == 'POST':
+    if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
         
@@ -24,7 +30,7 @@ def login():
                 flash('Incorrect password, try again.', category='error')
         else:
             flash('User does not exist.', category='error')
-    return render_template("Login.html",user = current_user)
+    return render_template("login.html",user = current_user)
 
 @auth.route('/logout')
 @login_required
@@ -32,12 +38,13 @@ def logout():
     logout_user()
     return render_template('views.home')
 
-@app.route('/register',methods = ['GET','POST'])
+@auth.route('/register',methods = ['GET','POST'])
 def register():
-    if method == 'POST':
+    if request.method == 'POST':
         email = request.form.get('email')
         name = request.form.get('name')
         dob = request.form.get('dob')
+        dob_date = datetime.strptime(dob, "%Y-%m-%d").date()
         qualification = request.form.get('qualification')
         password = request.form.get('password')
         cp = request.form.get('cp')
@@ -48,7 +55,7 @@ def register():
             flash('Password\'s don\'t match')
         else:
             password1 = generate_password_hash(password,method='pbkdf2:sha256')
-            new_user = User(email = email , name = name , dob = dob , qualification = qualification , password = password)
+            new_user = User(email = email , name = name , dob = dob_date , qualification = qualification , password = password)
             db.session.add(new_user)
             db.session.commit()
             flash('Account Created Successfully' , category = 'success')

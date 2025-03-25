@@ -3,17 +3,17 @@ from flask_login import *
 from .models import *
 from . import db
 from datetime import *
+from functools import wraps
 
 admin = Blueprint('admin',__name__)
 
 def admin_required(f):
-    def admin_required(f):
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
             flash('Access denied. Admin privileges required.', category='error')
             return redirect(url_for('views.home'))
         return f(*args, **kwargs)
-    decorated_function.__name__ = f.__name__
     return decorated_function
 
 @admin.route('/dashboard')

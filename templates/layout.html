@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{% endblock %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .navbar {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        padding: 10px 0;
+        transition: 0.3s ease-in-out;
+      }
+
+      .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fff;
+        transition: 0.3s;
+      }
+
+      .navbar-brand:hover {
+        color: #f8f9fa;
+      }
+
+      .navbar-nav .nav-link {
+        color: #ffffff;
+        font-size: 1rem;
+        transition: 0.3s;
+      }
+
+      .navbar-nav .nav-link:hover,
+      .navbar-nav .nav-link.active {
+        color: #ffdd57;
+        text-decoration: underline;
+      }
+
+      .navbar-nav .dropdown-menu {
+        background: #004080;
+        border: none;
+        border-radius: 5px;
+      }
+
+      .navbar-nav .dropdown-item {
+        color: #ffffff;
+        transition: 0.3s;
+      }
+
+      .navbar-nav .dropdown-item:hover {
+        background: #007bff;
+        color: #fff;
+      }
+
+      .navbar .btn-outline-light {
+        border-color: #fff;
+        color: #fff;
+        transition: 0.3s;
+      }
+
+      .navbar .btn-outline-light:hover {
+        background: #fff;
+        color: #007bff;
+      }
+
+      .navbar .btn-light {
+        background: #ffdd57;
+        color: #004080;
+        transition: 0.3s;
+      }
+
+      .navbar .btn-light:hover {
+        background: #ffd700;
+      }
+
+      .navbar-toggler {
+        border: none;
+        outline: none;
+      }
+
+      .navbar-toggler:focus {
+        box-shadow: none;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="/"> Quiz App </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="/">Home</a>
+            </li>
+          </ul>
+          <div class="d-flex">
+            <a class="btn btn-outline-light me-2" href="/login">Login</a>
+            <a class="btn btn-light text-primary" href="/register">Register</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    {% block content %} {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

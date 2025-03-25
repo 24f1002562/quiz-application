@@ -1,22 +1,23 @@
-from flask import flask
-from flask_login import UserMixin,LoginManager
-from sqlalchemy import *
-from os import path
-from werkzeug.security import generate_password_hash,check_password_hash
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from datetime import datetime
 
 db = SQLAlchemy()
 DB_NAME = "quiz-app.db"
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder='/home/teja/Desktop/quiz-application/templates')
     app.config['SECRET_KEY'] = '24f1005262'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{quiz-app.db}'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+
+    from .models import User  # Ensure this is inside create_app
+
     l_manager = LoginManager()
     l_manager.login_view = 'auth.login'
     l_manager.init_app(app)
-    from .models import User
 
     @l_manager.user_loader
     def load_user(id):
@@ -31,28 +32,29 @@ def create_app():
     app.register_blueprint(admin, url_prefix='/admin')
 
     create_database(app)
-    create_admin(app)
+    create_admin(app)  # User must be available when this runs
 
     return app
 
 def create_database(app):
-    if not path.exists('quiz-app.db'):
-        with app.app_context():
-            db.create_all()
-            print("Created Data-Base")
-
+    with app.app_context():
+        db.create_all()
+        print("Created Database")
 
 def create_admin(app):
-    from .models import User
-    db app.app_context():
-    db.create_all()
-    if not User.query.filter_by(email = '24f1002562@ds.study.iitm.ac.in').first():
-        admin = User(
-            email = '24f1002562@ds.study.iitm.ac.in'
-            name = "Teja"
-            password = "Teja@4569"
-            qualification = "B-TECH"
-            DOB = "07-07-2006"
-        )
-        db.session.app(admin)
-        db.session.commit()
+    from .models import User  # Move import inside function
+
+    with app.app_context():
+        db.create_all()
+
+        if not User.query.filter_by(email="24f1002562@ds.study.iitm.ac.in").first():
+            admin = User(
+                email="24f1002562@ds.study.iitm.ac.in",
+                name="Teja",
+                password="Teja@4569",
+                qualification="B-TECH",
+                dob=datetime.strptime("07-07-2006", "%d-%m-%Y").date(),
+                is_admin=True
+            )
+            db.session.add(admin)
+            db.session.commit()

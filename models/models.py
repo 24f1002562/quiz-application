@@ -8,16 +8,14 @@ class User(db.Model , UserMixin):
     password = db.Column(db.String(150))
     name = db.Column(db.String(150))
     qualification = db.Column(db.String(150))
-    dob = db.Column(db.String(10))
-    is_admin = db.Column(db.Boolean, default=False)
-    scores = db.relationship('Score', backref='user', lazy=True)
+    dob = db.Column(db.Date, nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
     scores = db.relationship('Score', backref='user', lazy=True)
 
 class Subject(db.Model , UserMixin):
     id = db.Column(db.Integer,primary_key = True , autoincrement=True)
     name = db.Column(db.String(150))
-    description = db.Column(db.text)
+    description = db.Column(db.Text)
     created_time = db.Column(db.DateTime, default=datetime.utcnow)
     chapters = db.relationship('Chapter', backref='subject', lazy=True)
 
@@ -25,12 +23,12 @@ class Chapter(db.Model , UserMixin):
     id = db.Column(db.Integer,primary_key = True , autoincrement=True)
     name = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text)
-    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)  # Foreign key to Subject
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     quizzes = db.relationship('Quiz', backref='chapter', lazy=True)
 
 class Quiz(db.Model , UserMixin):
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
-    Chapter_id = db.Column(1db.Integer , db.ForeignKey('chapter.id'),nullable=False)
+    Chapter_id = db.Column(db.Integer , db.ForeignKey('chapter.id'),nullable=False)
     date_of_quiz = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     time_duration = db.Column(db.String(5), nullable=False)
     remarks = db.Column(db.Text)
@@ -45,7 +43,7 @@ class Question(db.Model,UserMixin):
     option2 = db.Column(db.String(255), nullable=False)
     option3 = db.Column(db.String(255), nullable=False)  
     option4 = db.Column(db.String(255), nullable=False)
-    answer = db.Column(db.Integer,nullable=Flase)
+    answer = db.Column(db.Integer,nullable=False)
 
 class Score(db.Model,UserMixin):
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
