@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block title %}Create Quiz{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">Create Quiz</h2>
+                    <span class="badge bg-light text-primary">{{ subject.name }}</span>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.quiz_form', subject_id=subject.id) }}">
+                        <div class="mb-4">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Quiz Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="chapter" class="form-label">Chapter</label>
+                                <select class="form-select" id="chapter" name="chapter_id" required>
+                                    <option value="" selected disabled>Select a chapter</option>
+                                    {% for chapter in chapters %}
+                                    <option value="{{ chapter.id }}">{{ chapter.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if chapters|length == 0 %}
+                                <div class="alert alert-warning mt-2">
+                                    <i class="bi bi-exclamation-triangle"></i> 
+                                    No chapters available for this subject. 
+                                    <a href="{{ url_for('admin.add_chapter', subject_id=subject.id) }}" class="alert-link">Add a chapter first</a>.
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="time_duration" class="form-label">Duration (minutes)</label>
+                                <input type="number" class="form-control" id="time_duration" name="time_duration" min="5" max="180" value="30">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.select_subject') }}" class="btn btn-secondary me-md-2">Back</a>
+                            <button type="submit" class="btn btn-primary">Create Quiz</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

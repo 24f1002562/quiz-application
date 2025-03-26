@@ -12,4 +12,4 @@ def home():
     if current_user.is_admin:
         return redirect(url_for('admin.dashboard'))
     subjects = Subject.query.all()
-    return render_template("home.html", user=current_user, subjects=subjects)
+    return render_template("user_dashboard.html", user=current_user, subjects=subjects)

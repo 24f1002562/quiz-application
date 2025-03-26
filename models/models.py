@@ -30,8 +30,9 @@ class Quiz(db.Model , UserMixin):
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
     Chapter_id = db.Column(db.Integer , db.ForeignKey('chapter.id'),nullable=False)
     date_of_quiz = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    title = db.Column(db.String(20) , nullable=False)
     time_duration = db.Column(db.String(5), nullable=False)
-    remarks = db.Column(db.Text)
+    description = db.Column(db.Text)
     questions = db.relationship('Question', backref='quiz', lazy=True)
     scores = db.relationship('Score', backref='quiz', lazy=True)
 
