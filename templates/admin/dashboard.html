@@ -1,57 +1,103 @@
-{% extends "layout.html" %}
+{% extends "admin/admin_layout.html" %}
 {% block title %}Admin Dashboard{% endblock %}
-{% block content %}
-<div class="container mt-4">
-    <h1 class="text-center mb-4">Admin Dashboard</h1>
-    
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3>Subjects</h3>
-                    <a href="{{ url_for('admin.add_subject') }}" class="btn btn-primary">Add Subject</a>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        {% set counter = namespace(value=0) %}
-                        {% for subject in subjects %}
-                            {% if counter.value < 3 %}
-                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h5 class="mb-1">{{ subject.name }}</h5>
-                                        <p class="mb-1">{{ subject.description }}</p>
-                                        <small>Created: {{ subject.created_time.strftime('%Y-%m-%d') }}</small>
-                                    </div>
-                                    <a href="{{ url_for('admin.add_chapter', subject_id=subject.id) }}" class="btn btn-sm btn-success">Add Chapter</a>
-                                </div>
-                                {% set counter.value = counter.value + 1 %}
-                            {% endif %}
-                        {% endfor %}
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('admin.add_subject') }}" class="btn btn-sm btn-outline-primary">Add Subject</a>
+            <a href="{{ url_for('admin.add_user') }}" class="btn btn-sm btn-outline-primary">Add User</a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Users</h5>
+                        <h2 class="display-4">{{ users|length }}</h2>
                     </div>
+                    <i class="bi bi-people display-4"></i>
                 </div>
+                <a href="{{ url_for('admin.users') }}" class="text-white">View all users <i class="bi bi-arrow-right"></i></a>
             </div>
         </div>
-        
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>Users</h3>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        {% for user in users %}
-                        <div class="list-group-item">
-                            <h5 class="mb-1">{{ user.name }}</h5>
-                            <p class="mb-1">{{ user.email }}</p>
-                            <small>Qualification: {{ user.qualification }}</small>
-                        </div>
-                        {% endfor %}
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Subjects</h5>
+                        <h2 class="display-4">{{ subjects|length }}</h2>
                     </div>
+                    <i class="bi bi-journal-text display-4"></i>
+                </div>
+                <a href="#subjectsList" class="text-white">View all subjects <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4" id="subjectsList">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Recent Subjects</h3>
+                <a href="{{ url_for('admin.add_subject') }}" class="btn btn-primary btn-sm">Add Subject</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for subject in subjects[:5] %}
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">{{ subject.name }}</h5>
+                                <p class="mb-1 text-muted">{{ subject.description }}</p>
+                                <small>Created: {{ subject.created_time.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            <div class="btn-group">
+                                <a href="{{ url_for('admin.add_chapter', subject_id=subject.id) }}" class="btn btn-sm btn-outline-success">Add Chapter</a>
+                                <form action="{{ url_for('admin.delete_subject', subject_id=subject.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this subject?')">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
     
-
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Recent Users</h3>
+                <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary btn-sm">Add User</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for user in users[:5] %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ user.name }}</h5>
+                                <small>{{ user.email }}</small>
+                            </div>
+                            <p class="mb-1">Qualification: {{ user.qualification }}</p>
+                            <div class="d-flex justify-content-end">
+                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-warning me-2">Edit</a>
+                                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

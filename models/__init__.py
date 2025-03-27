@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from datetime import datetime
 from werkzeug.security import generate_password_hash
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 DB_NAME = "quiz-app.db"
@@ -13,8 +14,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
-
-    from .models import User  # Ensure this is inside create_app
+    from .models import User
 
     l_manager = LoginManager()
     l_manager.login_view = 'auth.login'
@@ -33,8 +33,7 @@ def create_app():
     app.register_blueprint(admin, url_prefix='/admin')
 
     create_database(app)
-    create_admin(app)  # User must be available when this runs
-
+    create_admin(app)
     return app
 
 def create_database(app):

@@ -4,6 +4,7 @@ from .models import *
 from . import db
 from datetime import datetime
 from functools import wraps
+from werkzeug.security import generate_password_hash
 
 admin = Blueprint('admin',__name__)
 
@@ -104,6 +105,14 @@ def quiz_form(subject_id):
         chapter_id = request.form.get('chapter_id')
         time_duration = request.form.get('time_duration')
         
+        # Ensure values are properly converted to integers
+        try:
+            time_duration = int(time_duration)
+            chapter_id = int(chapter_id)
+        except (ValueError, TypeError):
+            flash('Invalid input values. Please check your form entries.', category='error')
+            return render_template('admin/quiz_form.html', user=current_user, subject=subject, chapters=chapters)
+        
         if not title:
             flash('Quiz title is required!', category='error')
         else:
@@ -114,8 +123,226 @@ def quiz_form(subject_id):
                 time_duration=time_duration
             )
             db.session.add(new_quiz)
-            db.session.commit()
-            flash(f'Quiz "{title}" added successfully!', category='success')
-            return redirect(url_for('admin.quizzes'))
+            
+            try:
+                db.session.commit()
+                flash(f'Quiz "{title}" added successfully!', category='success')
+                return redirect(url_for('admin.view_quiz', quiz_id=new_quiz.id))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error creating quiz: {str(e)}', category='error')
+                print(f"Database error: {str(e)}")
     
     return render_template('admin/quiz_form.html', user=current_user, subject=subject, chapters=chapters)
+
+@admin.route('/quiz/<int:quiz_id>/add_questions', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_questions(quiz_id):
+    from .models import Quiz, Question
+    quiz = Quiz.query.get_or_404(quiz_id)
+    
+    if request.method == 'POST':
+        question_text = request.form.get('question')
+        option1 = request.form.get('option1')
+        option2 = request.form.get('option2')
+        option3 = request.form.get('option3')
+        option4 = request.form.get('option4')
+        answer = request.form.get('answer')
+        
+        if not question_text or not option1 or not option2 or not option3 or not option4 or not answer:
+            flash('All fields are required', category='error')
+        else:
+            new_question = Question(
+                quiz_id=quiz_id,
+                quest=question_text,
+                option1=option1,
+                option2=option2,
+                option3=option3,
+                option4=option4,
+                answer=answer
+            )
+            db.session.add(new_question)
+            db.session.commit()
+            flash('Question added successfully!', category='success')
+            if 'save_and_add' in request.form:
+                return redirect(url_for('admin.add_questions', quiz_id=quiz_id))
+            else:
+                return redirect(url_for('admin.view_quiz', quiz_id=quiz_id))
+    existing_questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    questions_count = len(existing_questions)
+    
+    return render_template('admin/add_questions.html', 
+                          user=current_user, 
+                          quiz=quiz, 
+                          questions_count=questions_count,
+                          existing_questions=existing_questions)
+
+@admin.route('/quiz/<int:quiz_id>/delete', methods=['GET'])
+@login_required
+@admin_required
+def delete_quiz(quiz_id):
+    from .models import Quiz, Question
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    for question in questions:
+        db.session.delete(question)
+    quiz = Quiz.query.get_or_404(quiz_id)
+    db.session.delete(quiz)
+    db.session.commit()
+    flash('Quiz and all its questions deleted successfully!', category='success')
+    return redirect(url_for('admin.quizzes'))
+
+@admin.route('/question/<int:question_id>/delete', methods=['GET'])
+@login_required
+@admin_required
+def delete_question(question_id):
+    from .models import Question
+    question = Question.query.get_or_404(question_id)
+    quiz_id = question.quiz_id
+    db.session.delete(question)
+    db.session.commit()
+    flash('Question deleted successfully!', category='success')
+    return redirect(url_for('admin.view_quiz', quiz_id=quiz_id))
+
+@admin.route('/delete/subject/<int:subject_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_subject(subject_id):
+    from .models import Subject
+    subject = Subject.query.get_or_404(subject_id)
+    db.session.delete(subject)
+    db.session.commit()
+    flash('Subject deleted successfully!', category='success')
+    return redirect(url_for('admin.dashboard'))
+
+
+@admin.route('/delete/chapter/<int:chapter_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_chapter(chapter_id):
+    from .models import Chapter
+    chapter = Chapter.query.get_or_404(chapter_id)
+    db.session.delete(chapter)
+    db.session.commit()
+    flash('Chapter deleted successfully!', category='success')
+    return redirect(url_for('admin.dashboard'))
+
+
+@admin.route('/users')
+@login_required
+@admin_required
+def users():
+    users = User.query.filter_by(is_admin=False).all()
+    return render_template('admin/users.html', user=current_user, users=users)
+
+
+@admin.route('/delete/user/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    from .models import User
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully!', category='success')
+    return redirect(url_for('admin.users'))
+
+@admin.route('/edit/user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    from .models import User
+    edit_user = User.query.get_or_404(user_id)
+    if request.method == 'POST':
+        edit_user.email = request.form.get('email')
+        edit_user.name = request.form.get('name')
+        edit_user.qualification = request.form.get('qualification')
+        dob_str = request.form.get('dob')
+        if dob_str:
+            try:
+                edit_user.dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+            except ValueError:
+                flash('Invalid date format', 'error')
+                return render_template('admin/edit_user.html', user=current_user, edit_user=edit_user)
+        db.session.commit()
+        flash('User updated successfully!', category='success')
+        return redirect(url_for('admin.users'))
+    return render_template('admin/edit_user.html', user=current_user, edit_user=edit_user)
+
+@admin.route('/add_user', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_user():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        name = request.form.get('name')
+        dob = request.form.get('dob')
+        dob_date = datetime.strptime(dob, "%Y-%m-%d").date()
+        qualification = request.form.get('qualification')
+        password = request.form.get('password')
+        cp = request.form.get('cp')
+        
+        user = User.query.filter_by(email=email).first()
+        if user:
+            flash('Email already exists', category='error')
+        elif password != cp:
+            flash('Passwords don\'t match', category='error')
+        elif len(password) < 8:
+            flash('Password must be at least 8 characters long', category='error')
+        else:
+            password1 = generate_password_hash(password, method='pbkdf2:sha256')
+            new_user = User(email=email, name=name, dob=dob_date, qualification=qualification, password=password1)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('User added successfully!', category='success')
+            return redirect(url_for('admin.users'))
+    return render_template('admin/add_user.html', user=current_user)
+
+@admin.route('/view/quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def view_quiz(quiz_id):
+    from .models import Question, Quiz
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    return render_template('admin/view_quiz.html', user=current_user, quiz=quiz, questions=questions)
+
+@admin.route('/edit/quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_quiz(quiz_id):
+    from .models import Quiz
+    quiz = Quiz.query.get_or_404(quiz_id)
+    if request.method == 'POST':
+        quiz.title = request.form.get('title')
+        quiz.description = request.form.get('description')
+        quiz.time_duration = request.form.get('time_duration')
+        db.session.commit()
+        flash('Quiz updated successfully!', category='success')
+        return redirect(url_for('admin.view_quiz', quiz_id=quiz_id))
+    return render_template('admin/edit_quiz.html', user=current_user, quiz=quiz)
+
+@admin.route('/edit/questions/<int:question_id>' , methods=['GET' , 'POST'])
+@login_required
+@admin_required
+def edit_question(question_id):
+    from .models import Question
+    question = Question.query.get_or_404(question_id)
+    if request.method == 'POST':
+        que = request.form.get('que')
+        option1 = request.form.get('option1')
+        option2 = request.form.get('option2')
+        option3 = request.form.get('option3')
+        option4 = request.form.get('option4')
+        answer = request.form.get('answer')
+        question.quest = que
+        question.option1 = option1
+        question.option2 = option2
+        question.option3 = option3
+        question.option4 = option4
+        question.answer = answer
+        db.session.commit()
+        flash('Question updated successfully!', category='success')
+        return redirect(url_for('admin.view_quiz', quiz_id=question.quiz_id))
+    return render_template('admin/edit_question.html', user=current_user, question=question)
+    

@@ -3,6 +3,7 @@ from flask_login import *
 from datetime import datetime
 
 class User(db.Model , UserMixin):
+    __tablename__ = 'user'
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
     email = db.Column(db.String(150) , unique=True)
     password = db.Column(db.String(150))
@@ -13,6 +14,7 @@ class User(db.Model , UserMixin):
     scores = db.relationship('Score', backref='user', lazy=True)
 
 class Subject(db.Model , UserMixin):
+    __tablename__ = 'subject'
     id = db.Column(db.Integer,primary_key = True , autoincrement=True)
     name = db.Column(db.String(150))
     description = db.Column(db.Text)
@@ -20,6 +22,7 @@ class Subject(db.Model , UserMixin):
     chapters = db.relationship('Chapter', backref='subject', lazy=True)
 
 class Chapter(db.Model , UserMixin):
+    __tablename__ = 'chapter'
     id = db.Column(db.Integer,primary_key = True , autoincrement=True)
     name = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text)
@@ -27,6 +30,7 @@ class Chapter(db.Model , UserMixin):
     quizzes = db.relationship('Quiz', backref='chapter', lazy=True)
 
 class Quiz(db.Model , UserMixin):
+    __tablename__ = 'quiz'
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
     Chapter_id = db.Column(db.Integer , db.ForeignKey('chapter.id'),nullable=False)
     date_of_quiz = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -37,6 +41,7 @@ class Quiz(db.Model , UserMixin):
     scores = db.relationship('Score', backref='quiz', lazy=True)
 
 class Question(db.Model,UserMixin):
+    __tablename__ = 'question'
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
     quiz_id = db.Column(db.Integer,db.ForeignKey('quiz.id'),nullable=False)
     quest = db.Column(db.Text,nullable=False)
@@ -47,6 +52,7 @@ class Question(db.Model,UserMixin):
     answer = db.Column(db.Integer,nullable=False)
 
 class Score(db.Model,UserMixin):
+    __tablename__ = 'score'
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

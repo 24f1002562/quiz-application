@@ -1,0 +1,98 @@
+{% extends "admin/admin_layout.html" %}
+{% block title %}View Quiz{% endblock %}
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ quiz.title }}</h1>
+    <div class="btn-toolbar">
+        <a href="{{ url_for('admin.edit_quiz', quiz_id=quiz.id) }}" class="btn btn-warning me-2">Edit Quiz</a>
+        <a href="{{ url_for('admin.quizzes') }}" class="btn btn-secondary">Back to Quizzes</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Description</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ quiz.description }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Quiz Details</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Duration
+                        <span class="badge bg-primary rounded-pill">{{ quiz.time_duration }} minutes</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Questions
+                        <span class="badge bg-primary rounded-pill">{{ questions|length }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Created
+                        <span class="badge bg-secondary rounded-pill">{{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="h5 mb-0">Questions</h3>
+        <a href="{{ url_for('admin.add_questions', quiz_id=quiz.id) }}" class="btn btn-success btn-sm">Add Questions</a>
+    </div>
+    <div class="card-body">
+        {% if questions %}
+            {% for question in questions %}
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Question {{ loop.index }}</h5>
+                            <div>
+                                <a href="{{ url_for('admin.edit_question', question_id=question.id) }}" class="btn btn-sm btn-warning me-2">Edit</a>
+                                <a href="{{ url_for('admin.delete_question', question_id=question.id) }}" class="btn btn-sm btn-danger">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><strong>{{ question.quest }}</strong></p>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="mb-2 {% if question.answer == 'option1' %}text-success fw-bold{% endif %}">
+                                    A. {{ question.option1 }} {% if question.answer == 'option1' %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}
+                                </div>
+                                <div class="mb-2 {% if question.answer == 'option2' %}text-success fw-bold{% endif %}">
+                                    B. {{ question.option2 }} {% if question.answer == 'option2' %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2 {% if question.answer == 'option3' %}text-success fw-bold{% endif %}">
+                                    C. {{ question.option3 }} {% if question.answer == 'option3' %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}
+                                </div>
+                                <div class="mb-2 {% if question.answer == 'option4' %}text-success fw-bold{% endif %}">
+                                    D. {{ question.option4 }} {% if question.answer == 'option4' %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No questions have been added to this quiz yet.
+                <a href="{{ url_for('admin.add_questions', quiz_id=quiz.id) }}" class="alert-link">Add questions now</a>.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
