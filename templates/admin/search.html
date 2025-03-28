@@ -1,0 +1,185 @@
+{% extends "admin/admin_layout.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="search-section mb-4">
+        <h2>Admin Search</h2>
+        <form action="{{ url_for('admin.admin_search') }}" method="GET" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" name="query" class="form-control form-control-lg" 
+                           value="{{ query if query else '' }}" 
+                           placeholder="Search for users, subjects, quizzes, or questions...">
+                </div>
+                <div class="col-md-2">
+                    <select name="type" class="form-select form-select-lg">
+                        <option value="all" {% if search_type == 'all' %}selected{% endif %}>All</option>
+                        <option value="users" {% if search_type == 'users' %}selected{% endif %}>Users</option>
+                        <option value="subjects" {% if search_type == 'subjects' %}selected{% endif %}>Subjects</option>
+                        <option value="quizzes" {% if search_type == 'quizzes' %}selected{% endif %}>Quizzes</option>
+                        <option value="questions" {% if search_type == 'questions' %}selected{% endif %}>Questions</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if query %}
+    <div class="results-section">
+        {% if search_type in ['all', 'users'] and results.users %}
+        <div class="users-results mb-4">
+            <h3>Users ({{ results.users|length }})</h3>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in results.users %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                   class="btn btn-sm btn-primary">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if search_type in ['all', 'subjects'] and results.subjects %}
+        <div class="subjects-results mb-4">
+            <h3>Subjects ({{ results.subjects|length }})</h3>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject in results.subjects %}
+                        <tr>
+                            <td>{{ subject.name }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_subject', subject_id=subject.id) }}" 
+                                   class="btn btn-sm btn-primary">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if search_type in ['all', 'quizzes'] and results.quizzes %}
+        <div class="quizzes-results mb-4">
+            <h3>Quizzes ({{ results.quizzes|length }})</h3>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Chapter</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quiz, chapter, subject in results.quizzes %}
+                        <tr>
+                            <td>{{ quiz.title }}</td>
+                            <td>{{ subject.name }}</td>
+                            <td>{{ chapter.name }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_quiz', quiz_id=quiz.id) }}" 
+                                   class="btn btn-sm btn-primary">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if search_type in ['all', 'questions'] and results.questions %}
+        <div class="questions-results mb-4">
+            <h3>Questions ({{ results.questions|length }})</h3>
+            <div class="accordion" id="questionsAccordion">
+                {% for question in results.questions %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#question{{ question.id }}">
+                            {{ question.quest }}
+                        </button>
+                    </h2>
+                    <div id="question{{ question.id }}" class="accordion-collapse collapse" 
+                         data-bs-parent="#questionsAccordion">
+                        <div class="accordion-body">
+                            <div class="options-list mb-3">
+                                <p>1. {{ question.option1 }}</p>
+                                <p>2. {{ question.option2 }}</p>
+                                <p>3. {{ question.option3 }}</p>
+                                <p>4. {{ question.option4 }}</p>
+                                <p class="text-success">Correct Answer: Option {{ question.answer }}</p>
+                            </div>
+                            <a href="{{ url_for('admin.edit_question', question_id=question.id) }}" 
+                               class="btn btn-primary">Edit Question</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not results.users and not results.subjects and not results.quizzes and not results.questions %}
+        <div class="alert alert-info">
+            No results found for "{{ query }}"
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.search-section {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.accordion-item {
+    margin-bottom: 0.5rem;
+}
+
+.options-list p {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+</style>
+{% endblock %} 

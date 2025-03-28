@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="search-section mb-4">
+        <h2>Search</h2>
+        <form action="{{ url_for('views.search') }}" method="GET" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" name="query" class="form-control form-control-lg" 
+                           value="{{ query if query else '' }}" 
+                           placeholder="Search for subjects or quizzes...">
+                </div>
+                <div class="col-md-2">
+                    <select name="type" class="form-select form-select-lg">
+                        <option value="all" {% if search_type == 'all' %}selected{% endif %}>All</option>
+                        <option value="subjects" {% if search_type == 'subjects' %}selected{% endif %}>Subjects</option>
+                        <option value="quizzes" {% if search_type == 'quizzes' %}selected{% endif %}>Quizzes</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if query %}
+    <div class="results-section">
+        {% if search_type in ['all', 'subjects'] and subjects %}
+        <div class="subjects-results mb-4">
+            <h3>Subjects ({{ subjects|length }})</h3>
+            <div class="row">
+                {% for subject in subjects %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ subject.name }}</h5>
+                            <p class="card-text">{{ subject.description }}</p>
+                            <a href="{{ url_for('views.subject_chapters', subject_id=subject.id) }}" 
+                               class="btn btn-primary">View Chapters</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if search_type in ['all', 'quizzes'] and quizzes %}
+        <div class="quizzes-results">
+            <h3>Quizzes ({{ quizzes|length }})</h3>
+            <div class="row">
+                {% for quiz, chapter, subject in quizzes %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 {% if quiz.id in attempted_quizzes %}border-success{% endif %}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ quiz.title }}</h5>
+                            <p class="card-text">{{ quiz.description }}</p>
+                            <div class="quiz-meta mb-3">
+                                <small class="text-muted">
+                                    {{ subject.name }} > {{ chapter.name }}
+                                </small>
+                            </div>
+                            {% if quiz.id in attempted_quizzes %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">Completed</span>
+                                <a href="{{ url_for('views.quiz_result', score_id=attempted_quizzes[quiz.id].id) }}" 
+                                   class="btn btn-outline-primary">View Results</a>
+                            </div>
+                            {% else %}
+                            <a href="{{ url_for('views.start_quiz', quiz_id=quiz.id) }}" 
+                               class="btn btn-primary">Start Quiz</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not subjects and not quizzes %}
+        <div class="alert alert-info">
+            No results found for "{{ query }}"
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.search-section {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.card {
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.quiz-meta {
+    border-left: 3px solid #6c757d;
+    padding-left: 10px;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+</style>
+{% endblock %} 

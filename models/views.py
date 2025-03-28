@@ -328,3 +328,58 @@ def debug_quiz(quiz_id):
             'answer_type': str(type(q.answer))
         })
     return jsonify(quiz_data)
+
+# User search routes
+@views.route('/search', methods=['GET'])
+@login_required
+def search():
+    query = request.args.get('query', '').strip()
+    search_type = request.args.get('type', 'all')
+    subject_id = request.args.get('subject_id', None)
+    
+    if not query:
+        return render_template('user/search.html', results=None)
+    
+    # Search subjects
+    subjects = []
+    if search_type in ['all', 'subjects']:
+        subjects = Subject.query.filter(Subject.name.ilike(f'%{query}%')).all()
+    
+    # Search chapters
+    chapters = []
+    if search_type == 'chapters' and subject_id:
+        chapters = Chapter.query.filter(
+            Chapter.subject_id == subject_id,
+            Chapter.name.ilike(f'%{query}%')
+        ).all()
+        return render_template(
+            'user/chapters.html',
+            subject=Subject.query.get(subject_id),
+            chapters=chapters
+        )
+    
+    # Search quizzes
+    quizzes = []
+    if search_type in ['all', 'quizzes']:
+        quizzes = db.session.query(Quiz, Chapter, Subject).join(
+            Chapter, Quiz.Chapter_id == Chapter.id
+        ).join(
+            Subject, Chapter.subject_id == Subject.id
+        ).filter(
+            Quiz.title.ilike(f'%{query}%')
+        ).all()
+    
+    # Get attempted quizzes for the current user
+    attempted_quizzes = {
+        score.quiz_id: score 
+        for score in Score.query.filter_by(user_id=current_user.id).all()
+    }
+    
+    return render_template(
+        'user/search.html',
+        query=query,
+        subjects=subjects,
+        quizzes=quizzes,
+        attempted_quizzes=attempted_quizzes,
+        search_type=search_type
+    )

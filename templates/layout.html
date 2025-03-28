@@ -86,6 +86,37 @@
           text-align: center;
         }
       }
+
+      .search-section {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .search-section input,
+      .search-section select {
+        border: 2px solid #e9ecef;
+        transition: border-color 0.3s ease;
+      }
+
+      .search-section input:focus,
+      .search-section select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+      }
+
+      .search-section button {
+        height: 100%;
+        font-weight: 500;
+      }
+
+      @media (max-width: 768px) {
+        .search-section {
+          padding: 1rem;
+        }
+      }
     </style>
   </head>
   <body>
@@ -106,6 +137,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('views.quiz_history') }}">Quiz History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('views.search') }}">Search</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">

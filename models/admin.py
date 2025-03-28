@@ -409,4 +409,52 @@ def add_chapter_subject():
         subject_id = request.form.get('subject_id')
         return redirect(url_for('admin.add_chapter', subject_id=subject_id))
     return render_template('admin/add_chapter_subject.html', user=current_user, subjects=subjects)
+
+@admin.route('/search', methods=['GET'])
+@login_required
+@admin_required
+def admin_search():
+    query = request.args.get('query', '').strip()
+    search_type = request.args.get('type', 'all')
+    
+    if not query:
+        return render_template('admin/search.html', results=None)
+    
+    results = {
+        'users': [],
+        'subjects': [],
+        'quizzes': [],
+        'questions': []
+    }
+    
+    if search_type in ['all', 'users']:
+        results['users'] = User.query.filter(
+            User.name.ilike(f'%{query}%') | User.email.ilike(f'%{query}%')
+        ).all()
+    
+    if search_type in ['all', 'subjects']:
+        results['subjects'] = Subject.query.filter(
+            Subject.name.ilike(f'%{query}%')
+        ).all()
+    
+    if search_type in ['all', 'quizzes']:
+        results['quizzes'] = db.session.query(Quiz, Chapter, Subject).join(
+            Chapter, Quiz.Chapter_id == Chapter.id
+        ).join(
+            Subject, Chapter.subject_id == Subject.id
+        ).filter(
+            Quiz.title.ilike(f'%{query}%')
+        ).all()
+    
+    if search_type in ['all', 'questions']:
+        results['questions'] = Question.query.filter(
+            Question.quest.ilike(f'%{query}%')
+        ).all()
+    
+    return render_template(
+        'admin/search.html',
+        query=query,
+        results=results,
+        search_type=search_type
+    )
         
