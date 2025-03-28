@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="welcome-section mb-4">
+        <h2>Welcome, {{ user.name }}!</h2>
+        <p>What would you like to do today?</p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Quizzes Attempted</h5>
+                    <h3 class="text-primary">{{ stats.total_attempts }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Average Score</h5>
+                    <h3 class="text-success">{{ stats.avg_score }}%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Best Score</h5>
+                    <h3 class="text-info">{{ stats.best_score }}%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Links</h5>
+                    <div class="list-group">
+                        <a href="{{ url_for('views.available_subjects') }}" class="list-group-item list-group-item-action">
+                            Browse Available Subjects
+                        </a>
+                        <a href="{{ url_for('views.recent_attempts') }}" class="list-group-item list-group-item-action">
+                            View Recent Attempts
+                        </a>
+                        <a href="{{ url_for('views.quiz_history') }}" class="list-group-item list-group-item-action">
+                            Quiz History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.welcome-section {
+    background: linear-gradient(135deg, #6c5ce7, #a8a4e6);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    color: white;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %} 

@@ -1,154 +1,83 @@
-{% extends "user/user_layout.html" %}
+{% extends "layout.html" %}
 {% block title %}Quiz History{% endblock %}
 
-{% block user_content %}
+{% block content %}
 <div class="container mt-4">
-    <h2 class="text-center mb-4">Quiz History</h2>
-    
-    {% if not history %}
-    <div class="alert alert-info text-center">
-        You haven't attempted any quizzes yet.
+    <h2 class="mb-4">Quiz History</h2>
+
+    {% if attempts %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Quiz Title</th>
+                    <th>Subject</th>
+                    <th>Chapter</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score, quiz, chapter, subject in attempts %}
+                <tr>
+                    <td>{{ quiz.title }}</td>
+                    <td>{{ subject.name }}</td>
+                    <td>{{ chapter.name }}</td>
+                    <td>{{ "%.1f"|format(score.total_scored) }}%</td>
+                    <td>{{ score.timestamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('views.quiz_result', score_id=score.id) }}" 
+                           class="btn btn-sm btn-info">View Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+
     {% else %}
-    <div class="accordion" id="quizHistoryAccordion">
-        {% for score_id, data in history.items() %}
-        <div class="accordion-item mb-3">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                        data-bs-target="#collapse{{ score_id }}">
-                    <div class="d-flex justify-content-between w-100 me-3">
-                        <div>
-                            <strong>{{ data.quiz.title }}</strong> 
-                            ({{ data.subject.name }} - {{ data.chapter.name }})
-                        </div>
-                        <div>
-                            <span class="badge bg-primary me-2">
-                                Score: {{ "%.1f"|format(data.score.total_scored) }}%
-                            </span>
-                            <span class="badge bg-secondary">
-                                {{ data.score.timestamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}
-                            </span>
-                        </div>
-                    </div>
-                </button>
-            </h2>
-            <div id="collapse{{ score_id }}" class="accordion-collapse collapse" 
-                 data-bs-parent="#quizHistoryAccordion">
-                <div class="accordion-body">
-                    <div class="quiz-details">
-                        <div class="mb-3">
-                            <strong>Duration:</strong> {{ data.quiz.time_duration }} minutes
-                        </div>
-                        
-                        <div class="questions-list">
-                            {% for attempt in data.attempts %}
-                            <div class="question-item card mb-3 
-                                        {% if attempt.is_correct %}border-success{% else %}border-danger{% endif %}">
-                                <div class="card-body">
-                                    <h5 class="card-title">
-                                        Question {{ loop.index }}
-                                        {% if attempt.is_correct %}
-                                        <span class="text-success float-end">✓ Correct</span>
-                                        {% else %}
-                                        <span class="text-danger float-end">✗ Incorrect</span>
-                                        {% endif %}
-                                    </h5>
-                                    <p class="card-text">{{ attempt.question.quest }}</p>
-                                    
-                                    <div class="options-list">
-                                        <div class="option {% if attempt.user_answer == 1 %}selected{% endif %} 
-                                                    {% if attempt.question.answer == 1 %}correct{% endif %}">
-                                            1. {{ attempt.question.option1 }}
-                                        </div>
-                                        <div class="option {% if attempt.user_answer == 2 %}selected{% endif %} 
-                                                    {% if attempt.question.answer == 2 %}correct{% endif %}">
-                                            2. {{ attempt.question.option2 }}
-                                        </div>
-                                        <div class="option {% if attempt.user_answer == 3 %}selected{% endif %} 
-                                                    {% if attempt.question.answer == 3 %}correct{% endif %}">
-                                            3. {{ attempt.question.option3 }}
-                                        </div>
-                                        <div class="option {% if attempt.user_answer == 4 %}selected{% endif %} 
-                                                    {% if attempt.question.answer == 4 %}correct{% endif %}">
-                                            4. {{ attempt.question.option4 }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+    <div class="alert alert-info text-center">
+        <p>You haven't attempted any quizzes yet.</p>
+        <a href="{{ url_for('views.available_subjects') }}" class="btn btn-primary mt-2">
+            Browse Available Quizzes
+        </a>
     </div>
     {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('views.dashboard') }}" class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
 </div>
 
 <style>
-.accordion-button:not(.collapsed) {
+.table {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.table thead th {
     background-color: #f8f9fa;
-    color: #000;
+    border-bottom: 2px solid #dee2e6;
 }
 
-.question-item {
-    transition: all 0.3s ease;
+.table tbody tr:hover {
+    background-color: #f5f5f5;
 }
 
-.question-item:hover {
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
 }
 
-.options-list {
-    margin-top: 1rem;
-}
-
-.option {
-    padding: 0.5rem 1rem;
-    margin: 0.3rem 0;
-    border-radius: 4px;
-    background-color: #f8f9fa;
-}
-
-.option.selected {
-    background-color: #e3f2fd;
-    border: 1px solid #90caf9;
-}
-
-.option.correct {
-    background-color: #e8f5e9;
-    border: 1px solid #a5d6a7;
-}
-
-.option.selected.correct {
-    background-color: #c8e6c9;
-    border: 1px solid #81c784;
-}
-
-.option.selected:not(.correct) {
-    background-color: #ffebee;
-    border: 1px solid #ef9a9a;
-}
-
-.badge {
-    font-size: 0.9rem;
-}
-
-.accordion-button:focus {
-    box-shadow: none;
-    border-color: rgba(0,0,0,.125);
-}
-
-.accordion-item {
-    border-radius: 8px !important;
-    overflow: hidden;
-    border: 1px solid rgba(0,0,0,.125);
-}
-
-.quiz-details {
-    max-width: 800px;
-    margin: 0 auto;
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
 }
 </style>
-{% endblock %}
+{% endblock %} 

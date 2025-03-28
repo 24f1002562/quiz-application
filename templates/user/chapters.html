@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}{{ subject.name }} - Chapters{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">{{ subject.name }} - Chapters</h2>
+    
+    <div class="row">
+        {% for chapter in chapters %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ chapter.name }}</h5>
+                    <p class="card-text">{{ chapter.description }}</p>
+                    <a href="{{ url_for('views.chapter_quizzes', chapter_id=chapter.id) }}" 
+                       class="btn btn-primary">View Quizzes</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

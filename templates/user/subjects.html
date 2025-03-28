@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Available Subjects{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Available Subjects</h2>
+    
+    <div class="row">
+        {% for subject in subjects %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ subject.name }}</h5>
+                    <p class="card-text">{{ subject.description }}</p>
+                    <a href="{{ url_for('views.subject_chapters', subject_id=subject.id) }}" 
+                       class="btn btn-primary">View Chapters</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

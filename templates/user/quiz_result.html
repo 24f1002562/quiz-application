@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+{% block title %}Quiz Result{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="result-header text-center mb-4 p-4 bg-light rounded">
+        <h2 class="mb-3">Quiz Results</h2>
+        <h3 class="text-primary mb-3">{{ quiz.title }}</h3>
+        <div class="score-display">
+            <div class="display-4 mb-3">Score: {{ "%.1f"|format(score.total_scored) }}%</div>
+            <div class="text-muted">
+                Attempted on {{ score.timestamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}
+            </div>
+        </div>
+    </div>
+
+    <div class="result-details mb-4">
+        {% for attempt in attempts %}
+        {% set question = questions[attempt.question_id] %}
+        <div class="card mb-4 {% if attempt.user_answer == question.answer %}border-success{% else %}border-danger{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Question {{ loop.index }}</h5>
+                {% if attempt.user_answer == question.answer %}
+                <span class="badge bg-success">Correct</span>
+                {% else %}
+                <span class="badge bg-danger">Incorrect</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p class="question-text mb-4">{{ question.quest }}</p>
+                
+                <div class="options-list">
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 1 %}user-selected{% endif %} 
+                                                           {% if question.answer == 1 %}correct-answer{% endif %}">
+                        <span class="option-marker">A</span>
+                        {{ question.option1 }}
+                        {% if attempt.user_answer == 1 and question.answer == 1 %}
+                        <span class="float-end text-success">✓ Your answer (Correct)</span>
+                        {% elif attempt.user_answer == 1 %}
+                        <span class="float-end text-danger">✗ Your answer</span>
+                        {% elif question.answer == 1 %}
+                        <span class="float-end text-success">✓ Correct answer</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 2 %}user-selected{% endif %} 
+                                                           {% if question.answer == 2 %}correct-answer{% endif %}">
+                        <span class="option-marker">B</span>
+                        {{ question.option2 }}
+                        {% if attempt.user_answer == 2 and question.answer == 2 %}
+                        <span class="float-end text-success">✓ Your answer (Correct)</span>
+                        {% elif attempt.user_answer == 2 %}
+                        <span class="float-end text-danger">✗ Your answer</span>
+                        {% elif question.answer == 2 %}
+                        <span class="float-end text-success">✓ Correct answer</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 3 %}user-selected{% endif %} 
+                                                           {% if question.answer == 3 %}correct-answer{% endif %}">
+                        <span class="option-marker">C</span>
+                        {{ question.option3 }}
+                        {% if attempt.user_answer == 3 and question.answer == 3 %}
+                        <span class="float-end text-success">✓ Your answer (Correct)</span>
+                        {% elif attempt.user_answer == 3 %}
+                        <span class="float-end text-danger">✗ Your answer</span>
+                        {% elif question.answer == 3 %}
+                        <span class="float-end text-success">✓ Correct answer</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 4 %}user-selected{% endif %} 
+                                                           {% if question.answer == 4 %}correct-answer{% endif %}">
+                        <span class="option-marker">D</span>
+                        {{ question.option4 }}
+                        {% if attempt.user_answer == 4 and question.answer == 4 %}
+                        <span class="float-end text-success">✓ Your answer (Correct)</span>
+                        {% elif attempt.user_answer == 4 %}
+                        <span class="float-end text-danger">✗ Your answer</span>
+                        {% elif question.answer == 4 %}
+                        <span class="float-end text-success">✓ Correct answer</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mb-4">
+        <a href="{{ url_for('views.quiz_history') }}" class="btn btn-secondary me-2">Back to History</a>
+        <a href="{{ url_for('views.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+.result-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.score-display {
+    color: #2c3e50;
+}
+
+.question-text {
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.option-item {
+    position: relative;
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+.option-marker {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    text-align: center;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.user-selected {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+}
+
+.correct-answer {
+    background-color: #f1f8e9;
+    border-left: 4px solid #8bc34a;
+}
+
+.user-selected.correct-answer {
+    background-color: #e8f5e9;
+    border-left: 4px solid #4caf50;
+}
+
+.card {
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+}
+
+.border-success {
+    border-width: 2px;
+}
+
+.border-danger {
+    border-width: 2px;
+}
+
+.btn {
+    padding: 10px 20px;
+    font-weight: 500;
+}
+</style>
+{% endblock %} 

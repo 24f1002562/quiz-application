@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Recent Attempts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Recent Quiz Attempts</h2>
+    
+    {% if attempts %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Quiz</th>
+                    <th>Subject</th>
+                    <th>Chapter</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score, quiz, chapter, subject in attempts %}
+                <tr>
+                    <td>{{ quiz.title }}</td>
+                    <td>{{ subject.name }}</td>
+                    <td>{{ chapter.name }}</td>
+                    <td>{{ "%.1f"|format(score.total_scored) }}%</td>
+                    <td>{{ score.timestamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('views.quiz_history') }}" class="btn btn-sm btn-info">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        You haven't attempted any quizzes yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
