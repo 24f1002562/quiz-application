@@ -1,0 +1,99 @@
+{% extends "user/user_layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block user_content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h2 class="card-title">Welcome, {{ current_user.username }}!</h2>
+                    <p class="card-text">Ready to test your knowledge? Choose from our available quizzes below.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="card-title mb-0">Quizzes Taken</h5>
+                        <i class="fas fa-clipboard-list fa-2x text-primary"></i>
+                    </div>
+                    <h2 class="mb-0">{{ quizzes_taken|default(0) }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="card-title mb-0">Average Score</h5>
+                        <i class="fas fa-chart-line fa-2x text-success"></i>
+                    </div>
+                    <h2 class="mb-0">{{ average_score|default('0%') }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="card-title mb-0">Available Quizzes</h5>
+                        <i class="fas fa-book fa-2x text-info"></i>
+                    </div>
+                    <h2 class="mb-0">{{ available_quizzes|default(0) }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Quizzes -->
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0">Available Quizzes</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Quiz Title</th>
+                                    <th>Subject</th>
+                                    <th>Chapter</th>
+                                    <th>Duration</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quiz in quizzes %}
+                                <tr>
+                                    <td>{{ quiz.title }}</td>
+                                    <td>{{ quiz.subject }}</td>
+                                    <td>{{ quiz.chapter }}</td>
+                                    <td>{{ quiz.duration }} minutes</td>
+                                    <td>
+                                        {% if quiz.id in completed_quiz_ids %}
+                                            <span class="badge bg-secondary"><i class="fas fa-check"></i> Closed</span>
+                                        {% else %}
+                                            <a href="{{ url_for('views.start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-play"></i> Start Quiz
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No quizzes available at the moment.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'user/performance_chart.html' %}
+</div>
+{% endblock %}

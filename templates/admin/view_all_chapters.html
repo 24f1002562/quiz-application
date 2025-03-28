@@ -1,0 +1,50 @@
+{% extends "admin/admin_layout.html" %}
+{% block title %}All Chapters{% endblock %}
+{% block admin_content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>All Chapters</h2>
+        <div>
+            <a href="{{ url_for('admin.add_chapter') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Chapter
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Chapter Name</th>
+                            <th>Subject</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chapter in chapters %}
+                        <tr>
+                            <td>{{ chapter.name }}</td>
+                            <td>{{ chapter.subject.name }}</td>
+                            <td>{{ chapter.description }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin.edit_chapter', chapter_id=chapter.id) }}" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{{ url_for('admin.quiz_form', subject_id=chapter.subject_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-plus"></i> Add Quiz
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock admin_content %}

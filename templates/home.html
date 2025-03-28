@@ -104,8 +104,8 @@
     <h1>Welcome to Quiz-Master</h1>
     <p>Your one-stop destination for amazing experiences.</p>
     <div class="buttons">
-      <a href="login.html" class="btn">Login</a>
-      <a href="register.html" class="btn">Register</a>
+      <a href="{{ url_for('auth.login') }}" class="btn">Login</a>
+      <a href="{{ url_for('auth.register') }}" class="btn">Register</a>
     </div>
   </div>
 </header>

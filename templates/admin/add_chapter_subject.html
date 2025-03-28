@@ -1,0 +1,21 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block title %}Add Chapter{% endblock %}
+
+{% block admin_content %}
+<div class="container">
+    <h1 class="text-center">Select Subject</h1>
+    <form action="{{ url_for('admin.add_chapter_subject') }}" method="post" class="mt-4">
+        <div class="mb-3">
+            <label for="subject_id" class="form-label">Choose a Subject</label>
+            <select name="subject_id" id="subject_id" class="form-select" required>
+                <option value="" selected disabled>Select a subject</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Continue to Add Chapter</button>
+    </form>
+</div>
+{% endblock admin_content %}

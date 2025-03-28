@@ -1,8 +1,8 @@
 from . import db
-from flask_login import *
+from flask_login import UserMixin
 from datetime import datetime
 
-class User(db.Model , UserMixin):
+class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer , primary_key = True,autoincrement=True)
     email = db.Column(db.String(150) , unique=True)
@@ -19,7 +19,7 @@ class Subject(db.Model , UserMixin):
     name = db.Column(db.String(150))
     description = db.Column(db.Text)
     created_time = db.Column(db.DateTime, default=datetime.utcnow)
-    chapters = db.relationship('Chapter', backref='subject', lazy=True)
+    chapters = db.relationship('Chapter', backref='subject', lazy=True, cascade='all, delete-orphan')
 
 class Chapter(db.Model , UserMixin):
     __tablename__ = 'chapter'
@@ -27,7 +27,7 @@ class Chapter(db.Model , UserMixin):
     name = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text)
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
-    quizzes = db.relationship('Quiz', backref='chapter', lazy=True)
+    quizzes = db.relationship('Quiz', backref='chapter', lazy=True, cascade='all, delete-orphan')
 
 class Quiz(db.Model , UserMixin):
     __tablename__ = 'quiz'
@@ -37,8 +37,8 @@ class Quiz(db.Model , UserMixin):
     title = db.Column(db.String(20) , nullable=False)
     time_duration = db.Column(db.String(5), nullable=False)
     description = db.Column(db.Text)
-    questions = db.relationship('Question', backref='quiz', lazy=True)
-    scores = db.relationship('Score', backref='quiz', lazy=True)
+    questions = db.relationship('Question', backref='quiz', lazy=True, cascade='all, delete-orphan')
+    scores = db.relationship('Score', backref='quiz', lazy=True, cascade='all, delete-orphan')
 
 class Question(db.Model,UserMixin):
     __tablename__ = 'question'

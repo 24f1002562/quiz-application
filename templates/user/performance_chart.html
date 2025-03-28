@@ -1,0 +1,58 @@
+{% block performance_charts %}
+<div class="row mt-4">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Quiz Performance History</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(quiz_dates|length) %}
+                            <tr>
+                                <td>{{ quiz_dates[i] }}</td>
+                                <td>{{ '%.1f'|format(quiz_scores[i]) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Subject Performance</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Average Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(subject_names|length) %}
+                            <tr>
+                                <td>{{ subject_names[i] }}</td>
+                                <td>{{ '%.1f'|format(subject_scores[i]) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

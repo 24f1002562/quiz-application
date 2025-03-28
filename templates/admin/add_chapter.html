@@ -1,6 +1,6 @@
-{% extends "layout.html" %}
+{% extends "admin/admin_layout.html" %}
 {% block title %}Add Chapter{% endblock %}
-{% block content %}
+{% block admin_content %}
 <div class="container">
     <h1 class="text-center">Add Chapter</h1>
     <form action="/admin/chapter/add/{{ subject_id }}" method="POST">
@@ -14,4 +14,5 @@
         </div>
         <button type="submit" class="btn btn-primary">Add Chapter</button>
     </form>
-{% endblock %}
+</div>
+{% endblock admin_content %}

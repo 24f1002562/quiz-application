@@ -1,4 +1,4 @@
-from models import create_app  # Import create_app from models/__init__.py
+from models import create_app
 
 app = create_app()
 

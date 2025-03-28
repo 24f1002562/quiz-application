@@ -1,0 +1,100 @@
+{% extends "user/user_layout.html" %}
+{% block title %}{{ quiz.title }}{% endblock %}
+
+ {% block head %}
+<script>
+window.onload = function() {
+    const startTime = {{ session['quiz_start_time']|int }};
+    const duration = {{ session['quiz_duration'] }} * 60;
+    const quizForm = document.getElementById('quizForm');
+    const timerDisplay = document.getElementById('timer');
+
+    function updateTimer() {
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timeElapsed = currentTime - startTime;
+        const timeRemaining = duration - timeElapsed;
+
+        if (timeRemaining <= 0) {
+            timerDisplay.textContent = '0:00';
+            quizForm.submit();
+            return;
+        }
+
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        if (timeRemaining <= 60) {
+            timerDisplay.style.color = '#dc3545';
+            timerDisplay.style.animation = 'blink 1s infinite';
+        }
+    }
+
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+    window.onunload = function() {
+        clearInterval(timerInterval);
+    };
+};
+</script>
+<style>
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+</style>
+{% endblock %}
+
+{% block user_content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">{{ quiz.title }}</h3>
+                    <div id="timer" class="bg-white text-danger px-3 py-1 rounded">
+    0:00
+</div>
+
+                </div>
+                <div class="card-body">
+                    <form id="quizForm" method="POST" action="{{ url_for('views.submit_quiz', quiz_id=quiz.id) }}">
+                        {% for question in questions %}
+                        <div class="question-card card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Question {{ loop.index }}</h5>
+                                <p class="card-text">{{ question.quest }}</p>
+                                <div class="options">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="1" required>
+                                        <label class="form-check-label">{{ question.option1 }}</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="2">
+                                        <label class="form-check-label">{{ question.option2 }}</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="3">
+                                        <label class="form-check-label">{{ question.option3 }}</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="4">
+                                        <label class="form-check-label">{{ question.option4 }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit Quiz</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

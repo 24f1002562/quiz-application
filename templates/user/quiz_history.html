@@ -1,0 +1,154 @@
+{% extends "user/user_layout.html" %}
+{% block title %}Quiz History{% endblock %}
+
+{% block user_content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Quiz History</h2>
+    
+    {% if not history %}
+    <div class="alert alert-info text-center">
+        You haven't attempted any quizzes yet.
+    </div>
+    {% else %}
+    <div class="accordion" id="quizHistoryAccordion">
+        {% for score_id, data in history.items() %}
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapse{{ score_id }}">
+                    <div class="d-flex justify-content-between w-100 me-3">
+                        <div>
+                            <strong>{{ data.quiz.title }}</strong> 
+                            ({{ data.subject.name }} - {{ data.chapter.name }})
+                        </div>
+                        <div>
+                            <span class="badge bg-primary me-2">
+                                Score: {{ "%.1f"|format(data.score.total_scored) }}%
+                            </span>
+                            <span class="badge bg-secondary">
+                                {{ data.score.timestamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}
+                            </span>
+                        </div>
+                    </div>
+                </button>
+            </h2>
+            <div id="collapse{{ score_id }}" class="accordion-collapse collapse" 
+                 data-bs-parent="#quizHistoryAccordion">
+                <div class="accordion-body">
+                    <div class="quiz-details">
+                        <div class="mb-3">
+                            <strong>Duration:</strong> {{ data.quiz.time_duration }} minutes
+                        </div>
+                        
+                        <div class="questions-list">
+                            {% for attempt in data.attempts %}
+                            <div class="question-item card mb-3 
+                                        {% if attempt.is_correct %}border-success{% else %}border-danger{% endif %}">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        Question {{ loop.index }}
+                                        {% if attempt.is_correct %}
+                                        <span class="text-success float-end">✓ Correct</span>
+                                        {% else %}
+                                        <span class="text-danger float-end">✗ Incorrect</span>
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text">{{ attempt.question.quest }}</p>
+                                    
+                                    <div class="options-list">
+                                        <div class="option {% if attempt.user_answer == 1 %}selected{% endif %} 
+                                                    {% if attempt.question.answer == 1 %}correct{% endif %}">
+                                            1. {{ attempt.question.option1 }}
+                                        </div>
+                                        <div class="option {% if attempt.user_answer == 2 %}selected{% endif %} 
+                                                    {% if attempt.question.answer == 2 %}correct{% endif %}">
+                                            2. {{ attempt.question.option2 }}
+                                        </div>
+                                        <div class="option {% if attempt.user_answer == 3 %}selected{% endif %} 
+                                                    {% if attempt.question.answer == 3 %}correct{% endif %}">
+                                            3. {{ attempt.question.option3 }}
+                                        </div>
+                                        <div class="option {% if attempt.user_answer == 4 %}selected{% endif %} 
+                                                    {% if attempt.question.answer == 4 %}correct{% endif %}">
+                                            4. {{ attempt.question.option4 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #000;
+}
+
+.question-item {
+    transition: all 0.3s ease;
+}
+
+.question-item:hover {
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.options-list {
+    margin-top: 1rem;
+}
+
+.option {
+    padding: 0.5rem 1rem;
+    margin: 0.3rem 0;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.option.selected {
+    background-color: #e3f2fd;
+    border: 1px solid #90caf9;
+}
+
+.option.correct {
+    background-color: #e8f5e9;
+    border: 1px solid #a5d6a7;
+}
+
+.option.selected.correct {
+    background-color: #c8e6c9;
+    border: 1px solid #81c784;
+}
+
+.option.selected:not(.correct) {
+    background-color: #ffebee;
+    border: 1px solid #ef9a9a;
+}
+
+.badge {
+    font-size: 0.9rem;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0,0,0,.125);
+}
+
+.accordion-item {
+    border-radius: 8px !important;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.quiz-details {
+    max-width: 800px;
+    margin: 0 auto;
+}
+</style>
+{% endblock %}

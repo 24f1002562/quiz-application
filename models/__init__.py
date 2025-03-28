@@ -5,6 +5,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash
 from flask_migrate import Migrate
 
+# Initialize SQLAlchemy here
 db = SQLAlchemy()
 DB_NAME = "quiz-app.db"
 
@@ -14,16 +15,18 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
-    from .models import User
 
     l_manager = LoginManager()
     l_manager.login_view = 'auth.login'
     l_manager.init_app(app)
 
+    # Import models after db initialization
+    from .models import User
     @l_manager.user_loader
     def load_user(id):
         return User.query.get(int(id))
 
+    # Register blueprints
     from .auth import auth
     from .views import views
     from .admin import admin
@@ -38,15 +41,16 @@ def create_app():
 
 def create_database(app):
     with app.app_context():
+        # Import all models here
+        from .models import User, Subject, Chapter, Quiz, Question, Score
+        from .quiz_attempt import QuizAttempt
         db.create_all()
         print("Created Database")
 
 def create_admin(app):
     from .models import User
-
+    
     with app.app_context():
-        db.create_all()
-
         if not User.query.filter_by(email="24f1002562@ds.study.iitm.ac.in").first():
             password1 = generate_password_hash("24f1002562", method='pbkdf2:sha256')
             admin = User(

@@ -17,22 +17,43 @@
                         <i class="bi bi-speedometer2 me-2"></i>Dashboard
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}" href="{{ url_for('admin.users') }}">
-                        <i class="bi bi-people me-2"></i>Users
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'admin.quizzes' %}active{% endif %}" href="{{ url_for('admin.quizzes') }}">
-                        <i class="bi bi-question-circle me-2"></i>Quizzes
-                    </a>
-                </li>
+                <!-- User Management -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="contentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-journal-plus me-2"></i>Content
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['admin.users', 'admin.add_user'] %}active{% endif %}" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-people me-2"></i>User Management
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="contentDropdown">
+                    <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">View Users</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.add_user') }}">Add User</a></li>
+                    </ul>
+                </li>
+                <!-- Subject Management -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['admin.view_all_subjects', 'admin.add_subject'] %}active{% endif %}" href="#" id="subjectDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-book me-2"></i>Subject Management
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="subjectDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.view_all_subjects') }}">View Subjects</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('admin.add_subject') }}">Add Subject</a></li>
+                    </ul>
+                </li>
+                <!-- Chapter Management -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['admin.view_all_chapters', 'admin.add_chapter'] %}active{% endif %}" href="#" id="chapterDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-journal-text me-2"></i>Chapter Management
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="chapterDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.view_all_chapters') }}">View Chapters</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.add_chapter_subject') }}">Add Chapter</a></li>
+                    </ul>
+                </li>
+                <!-- Quiz Management -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['admin.view_all_quizzes', 'admin.select_subject'] %}active{% endif %}" href="#" id="quizDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-question-circle me-2"></i>Quiz Management
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="quizDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.view_all_quizzes') }}">View Quizzes</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('admin.select_subject') }}">Create Quiz</a></li>
                     </ul>
                 </li>
@@ -64,4 +85,4 @@
     
     {% block admin_content %}{% endblock %}
 </div>
-{% endblock %} 
+{% endblock content %}

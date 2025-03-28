@@ -51,7 +51,7 @@ def add_chapter(subject_id):
     if subject_id:
         subject = Subject.query.get_or_404(subject_id)
     else:
-        subject = None  # No subject assigned
+        subject = None
 
     if request.method == 'POST':
         name = request.form.get('name')
@@ -68,16 +68,30 @@ def add_chapter(subject_id):
 
     return render_template('admin/add_chapter.html', user=current_user, subject=subject , subject_id=subject_id)
 
-@admin.route('/quizzes', methods=['GET', 'POST'])
+@admin.route('/subjects', methods=['GET'])
 @login_required
 @admin_required
-def quizzes():
+def view_all_subjects():
+    subjects = Subject.query.all()
+    return render_template('admin/view_all_subjects.html', user=current_user, subjects=subjects)
+
+@admin.route('/chapters', methods=['GET'])
+@login_required
+@admin_required
+def view_all_chapters():
+    chapters = Chapter.query.all()
+    return render_template('admin/view_all_chapters.html', user=current_user, chapters=chapters)
+
+@admin.route('/quizzes', methods=['GET'])
+@login_required
+@admin_required
+def view_all_quizzes():
     quizzes = (
     db.session.query(Quiz, Chapter, Subject)
     .join(Chapter, Quiz.Chapter_id == Chapter.id)
     .join(Subject, Chapter.subject_id == Subject.id)
     .all() )
-    return render_template('admin/quizzes.html', user=current_user, quizzes=quizzes)
+    return render_template('admin/view_all_quizzes.html', user=current_user, quizzes=quizzes)
 
 @admin.route('/quiz/add/subject', methods=['GET', 'POST'])
 @login_required
@@ -345,4 +359,54 @@ def edit_question(question_id):
         flash('Question updated successfully!', category='success')
         return redirect(url_for('admin.view_quiz', quiz_id=question.quiz_id))
     return render_template('admin/edit_question.html', user=current_user, question=question)
+
+@admin.route('/edit/subject/<int:subject_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_subject(subject_id):
+    from .models import Subject
+    subject = Subject.query.get_or_404(subject_id)
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        if not name:
+            flash('Subject name is required!', category='error')
+        else:
+            subject.name = name
+            subject.description = description
+            db.session.commit()
+            flash('Subject updated successfully!', category='success')
+            return redirect(url_for('admin.view_all_subjects'))
+    return render_template('admin/edit_subject.html', user=current_user, subject=subject)
+
+@admin.route('/edit/chapter/<int:chapter_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_chapter(chapter_id):
+    from .models import Chapter
+    chapter = Chapter.query.get_or_404(chapter_id)
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        if not name:
+            flash('Chapter name is required!', category='error')
+        else:
+            chapter.name = name
+            chapter.description = description
+            db.session.commit()
+            flash('Chapter updated successfully!', category='success')
+            return redirect(url_for('admin.view_all_chapters'))
+    return render_template('admin/edit_chapter.html', user=current_user, chapter=chapter)
     
+
+@admin.route('/add/chapter/subject', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_chapter_subject():
+    from.models import Subject, Chapter
+    subjects = Subject.query.all()
+    if request.method == 'POST':
+        subject_id = request.form.get('subject_id')
+        return redirect(url_for('admin.add_chapter', subject_id=subject_id))
+    return render_template('admin/add_chapter_subject.html', user=current_user, subjects=subjects)
+        

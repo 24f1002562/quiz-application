@@ -1,6 +1,6 @@
 {% extends "admin/admin_layout.html" %}
 {% block title %}Add Subject{% endblock %}
-{% block content %}
+{% block admin_content %}
 <div class="container">
     <h1 class="text-center">Add Subject</h1>
     <form action="/admin/subject/add" method="POST">
@@ -14,4 +14,4 @@
         </div>
         <button type="submit" class="btn btn-primary">Add Subject</button>
     </form>
-{% endblock %}
+{% endblock admin_content %}
