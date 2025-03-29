@@ -42,8 +42,7 @@ def create_app():
 def create_database(app):
     with app.app_context():
         # Import all models here
-        from .models import User, Subject, Chapter, Quiz, Question, Score
-        from .quiz_attempt import QuizAttempt
+        from .models import User, Subject, Chapter, Quiz, Question, Score , QuizAttempt
         db.create_all()
         print("Created Database")
 

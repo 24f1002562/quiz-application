@@ -52,11 +52,9 @@ def add_chapter(subject_id):
         subject = Subject.query.get_or_404(subject_id)
     else:
         subject = None
-
     if request.method == 'POST':
         name = request.form.get('name')
         description = request.form.get('description')
-
         if not name:
             flash('Chapter name is required!', category='error')
         else:
@@ -65,7 +63,6 @@ def add_chapter(subject_id):
             db.session.commit()
             flash('Chapter added successfully!', category='success')
             return redirect(url_for('admin.dashboard'))
-
     return render_template('admin/add_chapter.html', user=current_user, subject=subject , subject_id=subject_id)
 
 @admin.route('/subjects', methods=['GET'])
@@ -112,21 +109,11 @@ def quiz_form(subject_id):
     from .models import Quiz, Chapter, Subject
     subject = Subject.query.get_or_404(subject_id)
     chapters = Chapter.query.filter_by(subject_id=subject_id).all()
-    
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
         chapter_id = request.form.get('chapter_id')
         time_duration = request.form.get('time_duration')
-        
-        # Ensure values are properly converted to integers
-        try:
-            time_duration = int(time_duration)
-            chapter_id = int(chapter_id)
-        except (ValueError, TypeError):
-            flash('Invalid input values. Please check your form entries.', category='error')
-            return render_template('admin/quiz_form.html', user=current_user, subject=subject, chapters=chapters)
-        
         if not title:
             flash('Quiz title is required!', category='error')
         else:
@@ -137,15 +124,8 @@ def quiz_form(subject_id):
                 time_duration=time_duration
             )
             db.session.add(new_quiz)
-            
-            try:
-                db.session.commit()
-                flash(f'Quiz "{title}" added successfully!', category='success')
-                return redirect(url_for('admin.view_quiz', quiz_id=new_quiz.id))
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error creating quiz: {str(e)}', category='error')
-                print(f"Database error: {str(e)}")
+            db.session.commit()
+            flash(f'Quiz "{title}" added successfully!', category='success')
     
     return render_template('admin/quiz_form.html', user=current_user, subject=subject, chapters=chapters)
 
@@ -155,7 +135,6 @@ def quiz_form(subject_id):
 def add_questions(quiz_id):
     from .models import Quiz, Question
     quiz = Quiz.query.get_or_404(quiz_id)
-    
     if request.method == 'POST':
         question_text = request.form.get('question')
         option1 = request.form.get('option1')
@@ -163,7 +142,7 @@ def add_questions(quiz_id):
         option3 = request.form.get('option3')
         option4 = request.form.get('option4')
         answer = request.form.get('answer')
-        
+
         if not question_text or not option1 or not option2 or not option3 or not option4 or not answer:
             flash('All fields are required', category='error')
         else:
@@ -185,26 +164,28 @@ def add_questions(quiz_id):
                 return redirect(url_for('admin.view_quiz', quiz_id=quiz_id))
     existing_questions = Question.query.filter_by(quiz_id=quiz_id).all()
     questions_count = len(existing_questions)
-    
-    return render_template('admin/add_questions.html', 
-                          user=current_user, 
-                          quiz=quiz, 
-                          questions_count=questions_count,
-                          existing_questions=existing_questions)
+    return render_template('admin/add_questions.html', user=current_user,quiz=quiz,questions_count=questions_count,existing_questions=existing_questions)
 
 @admin.route('/quiz/<int:quiz_id>/delete', methods=['GET'])
 @login_required
 @admin_required
 def delete_quiz(quiz_id):
-    from .models import Quiz, Question
-    questions = Question.query.filter_by(quiz_id=quiz_id).all()
-    for question in questions:
-        db.session.delete(question)
+    from .models import Quiz,Score,QuizAttempt
     quiz = Quiz.query.get_or_404(quiz_id)
+    scores = Score.query.filter_by(quiz_id=quiz_id).all()
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    for score in scores:
+        attempts = QuizAttempt.query.filter_by(score_id=score_id).all()
+        for attempt in attempts:
+            db.session.delete(attempt)
+        db.session.delete(score)
+    for quest in questions:
+        db.session.delete(quest)
     db.session.delete(quiz)
     db.session.commit()
-    flash('Quiz and all its questions deleted successfully!', category='success')
-    return redirect(url_for('admin.quizzes'))
+    flash('Quiz deleted successfully!', category='success')
+    return redirect(url_for('admin.view_all_quizzes'))
+
 
 @admin.route('/question/<int:question_id>/delete', methods=['GET'])
 @login_required
@@ -222,25 +203,50 @@ def delete_question(question_id):
 @login_required
 @admin_required
 def delete_subject(subject_id):
-    from .models import Subject
+    from .models import Subject, Chapter, Quiz, Question, Score, QuizAttempt
     subject = Subject.query.get_or_404(subject_id)
+    chapters = Chapter.query.filter_by(subject_id = subject_id).all()
+    for chapter in chapters:
+        quizzes = Quiz.query.filter_by(Chapter_id = chapter.id).all()
+        for quiz in quizzes:
+            scores = Score.query.filter_by(quiz_id = quiz.id).all()
+            for score in scores:
+                attempts = QuizAttempt.query.filter_by(score_id = score.id).all()
+                for attempt in attempts:
+                    db.session.delete(attempt)
+                db.session.delete(score)
+            questions = Question.query.filter_by(quiz_id = quiz.id).all()
+            for quest in questions:
+                db.session.delete(quest)
+            db.session.delete(quiz)
+        db.session.delete(chapter)
     db.session.delete(subject)
     db.session.commit()
     flash('Subject deleted successfully!', category='success')
     return redirect(url_for('admin.dashboard'))
 
-
 @admin.route('/delete/chapter/<int:chapter_id>', methods=['POST'])
 @login_required
 @admin_required
 def delete_chapter(chapter_id):
-    from .models import Chapter
+    from .models import Chapter , Quiz , Score , QuizAttempt , Question
     chapter = Chapter.query.get_or_404(chapter_id)
+    quizzes = Quiz.query.filter_by(Chapter_id = chapter_id).all()
+    for quiz in quizzes:
+        scores = Score.query.filter_by(quiz_id = quiz.id).all()
+        questions = Question.query.filter_by(quiz_id = quiz.id).all()
+        for score in scores:
+            attempts = QuizAttempt.query.filter_by(score_id = score.id).all()
+            for attempt in attempts:
+                db.session.delete(attempt)
+            db.session.delete(score)
+        for quest in questions:
+            db.session.delete(quest)
+        db.session.delete(quiz)
     db.session.delete(chapter)
     db.session.commit()
     flash('Chapter deleted successfully!', category='success')
     return redirect(url_for('admin.dashboard'))
-
 
 @admin.route('/users')
 @login_required
@@ -249,16 +255,21 @@ def users():
     users = User.query.filter_by(is_admin=False).all()
     return render_template('admin/users.html', user=current_user, users=users)
 
-
 @admin.route('/delete/user/<int:user_id>', methods=['POST'])
 @login_required
 @admin_required
 def delete_user(user_id):
-    from .models import User
+    from .models import User, Score, QuizAttempt
     user = User.query.get_or_404(user_id)
+    scores = Score.query.filter_by(user_id = user_id).all()
+    for score in scores:
+        attempts = QuizAttempt.query.filter_by(score_id=score.id).all()
+        for attempt in attempts:
+            db.session.delete(attempt) 
+        db.session.delete(score)
     db.session.delete(user)
     db.session.commit()
-    flash('User deleted successfully!', category='success')
+    flash('User was deleted successfully!', category='success')
     return redirect(url_for('admin.users'))
 
 @admin.route('/edit/user/<int:user_id>', methods=['GET', 'POST'])
@@ -272,17 +283,12 @@ def edit_user(user_id):
         edit_user.name = request.form.get('name')
         edit_user.qualification = request.form.get('qualification')
         dob_str = request.form.get('dob')
-        if dob_str:
-            try:
-                edit_user.dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
-            except ValueError:
-                flash('Invalid date format', 'error')
-                return render_template('admin/edit_user.html', user=current_user, edit_user=edit_user)
+        edit_user.dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
         db.session.commit()
         flash('User updated successfully!', category='success')
         return redirect(url_for('admin.users'))
     return render_template('admin/edit_user.html', user=current_user, edit_user=edit_user)
-
+    
 @admin.route('/add_user', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -295,14 +301,11 @@ def add_user():
         qualification = request.form.get('qualification')
         password = request.form.get('password')
         cp = request.form.get('cp')
-        
         user = User.query.filter_by(email=email).first()
         if user:
             flash('Email already exists', category='error')
         elif password != cp:
             flash('Passwords don\'t match', category='error')
-        elif len(password) < 8:
-            flash('Password must be at least 8 characters long', category='error')
         else:
             password1 = generate_password_hash(password, method='pbkdf2:sha256')
             new_user = User(email=email, name=name, dob=dob_date, qualification=qualification, password=password1)
@@ -398,7 +401,6 @@ def edit_chapter(chapter_id):
             return redirect(url_for('admin.view_all_chapters'))
     return render_template('admin/edit_chapter.html', user=current_user, chapter=chapter)
     
-
 @admin.route('/add/chapter/subject', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -416,27 +418,22 @@ def add_chapter_subject():
 def admin_search():
     query = request.args.get('query', '').strip()
     search_type = request.args.get('type', 'all')
-    
     if not query:
         return render_template('admin/search.html', results=None)
-    
     results = {
         'users': [],
         'subjects': [],
         'quizzes': [],
         'questions': []
     }
-    
     if search_type in ['all', 'users']:
         results['users'] = User.query.filter(
             User.name.ilike(f'%{query}%') | User.email.ilike(f'%{query}%')
         ).all()
-    
     if search_type in ['all', 'subjects']:
         results['subjects'] = Subject.query.filter(
             Subject.name.ilike(f'%{query}%')
         ).all()
-    
     if search_type in ['all', 'quizzes']:
         results['quizzes'] = db.session.query(Quiz, Chapter, Subject).join(
             Chapter, Quiz.Chapter_id == Chapter.id
@@ -445,16 +442,13 @@ def admin_search():
         ).filter(
             Quiz.title.ilike(f'%{query}%')
         ).all()
-    
     if search_type in ['all', 'questions']:
         results['questions'] = Question.query.filter(
             Question.quest.ilike(f'%{query}%')
         ).all()
-    
     return render_template(
         'admin/search.html',
         query=query,
         results=results,
         search_type=search_type
     )
-        

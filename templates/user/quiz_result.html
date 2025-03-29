@@ -20,67 +20,73 @@
         <div class="card mb-4 {% if attempt.user_answer == question.answer %}border-success{% else %}border-danger{% endif %}">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Question {{ loop.index }}</h5>
-                {% if attempt.user_answer == question.answer %}
-                <span class="badge bg-success">Correct</span>
-                {% else %}
-                <span class="badge bg-danger">Incorrect</span>
-                {% endif %}
             </div>
             <div class="card-body">
                 <p class="question-text mb-4">{{ question.quest }}</p>
+                <div class="alert {% if attempt.user_answer == question.answer %}alert-success{% else %}alert-info{% endif %} mb-3">
+                    <i class="fas fa-info-circle me-2"></i>Correct Answer: 
+                    {% if question.answer == 'option1' %}{{ question.option1 }}
+                    {% elif question.answer == 'option2' %}{{ question.option2 }}
+                    {% elif question.answer == 'option3' %}{{ question.option3 }}
+                    {% elif question.answer == 'option4' %}{{ question.option4 }}
+                    {% endif %}
+                </div>
                 
                 <div class="options-list">
-                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 1 %}user-selected{% endif %} 
-                                                           {% if question.answer == 1 %}correct-answer{% endif %}">
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 'option1' %}user-selected{% endif %} 
+                                                           {% if question.answer == 'option1' %}correct-answer{% endif %}">
                         <span class="option-marker">A</span>
                         {{ question.option1 }}
-                        {% if attempt.user_answer == 1 and question.answer == 1 %}
+                        {% if attempt.user_answer == 'option1' and question.answer == 'option1' %}
                         <span class="float-end text-success">✓ Your answer (Correct)</span>
-                        {% elif attempt.user_answer == 1 %}
+                        {% elif attempt.user_answer == 'option1' %}
                         <span class="float-end text-danger">✗ Your answer</span>
-                        {% elif question.answer == 1 %}
+                        {% elif question.answer == 'option1' %}
                         <span class="float-end text-success">✓ Correct answer</span>
                         {% endif %}
                     </div>
 
-                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 2 %}user-selected{% endif %} 
-                                                           {% if question.answer == 2 %}correct-answer{% endif %}">
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 'option2' %}user-selected{% endif %} 
+                                                           {% if question.answer == 'option2' %}correct-answer{% endif %}">
                         <span class="option-marker">B</span>
                         {{ question.option2 }}
-                        {% if attempt.user_answer == 2 and question.answer == 2 %}
+                        {% if attempt.user_answer == 'option2' and question.answer == 'option2' %}
                         <span class="float-end text-success">✓ Your answer (Correct)</span>
-                        {% elif attempt.user_answer == 2 %}
+                        {% elif attempt.user_answer == 'option2' %}
                         <span class="float-end text-danger">✗ Your answer</span>
-                        {% elif question.answer == 2 %}
+                        {% elif question.answer == 'option2' %}
                         <span class="float-end text-success">✓ Correct answer</span>
                         {% endif %}
                     </div>
 
-                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 3 %}user-selected{% endif %} 
-                                                           {% if question.answer == 3 %}correct-answer{% endif %}">
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 'option3' %}user-selected{% endif %} 
+                                                           {% if question.answer == 'option3' %}correct-answer{% endif %}">
                         <span class="option-marker">C</span>
                         {{ question.option3 }}
-                        {% if attempt.user_answer == 3 and question.answer == 3 %}
+                        {% if attempt.user_answer == 'option3' and question.answer == 'option3' %}
                         <span class="float-end text-success">✓ Your answer (Correct)</span>
-                        {% elif attempt.user_answer == 3 %}
+                        {% elif attempt.user_answer == 'option3' %}
                         <span class="float-end text-danger">✗ Your answer</span>
-                        {% elif question.answer == 3 %}
+                        {% elif question.answer == 'option3' %}
                         <span class="float-end text-success">✓ Correct answer</span>
                         {% endif %}
                     </div>
 
-                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 4 %}user-selected{% endif %} 
-                                                           {% if question.answer == 4 %}correct-answer{% endif %}">
+                    <div class="option-item mb-2 p-2 rounded {% if attempt.user_answer == 'option4' %}user-selected{% endif %} 
+                                                           {% if question.answer == 'option4' %}correct-answer{% endif %}">
                         <span class="option-marker">D</span>
                         {{ question.option4 }}
-                        {% if attempt.user_answer == 4 and question.answer == 4 %}
+                        {% if attempt.user_answer == 'option4' and question.answer == 'option4' %}
                         <span class="float-end text-success">✓ Your answer (Correct)</span>
-                        {% elif attempt.user_answer == 4 %}
+                        {% elif attempt.user_answer == 'option4' %}
                         <span class="float-end text-danger">✗ Your answer</span>
-                        {% elif question.answer == 4 %}
+                        {% elif question.answer == 'option4' %}
                         <span class="float-end text-success">✓ Correct answer</span>
                         {% endif %}
                     </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Your answer : {{ attempt.user_answer }}</h5>
                 </div>
             </div>
         </div>
@@ -153,7 +159,19 @@
 
 .badge {
     font-size: 0.9rem;
-    padding: 8px 12px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.animate-badge {
+    animation: badgePulse 1.5s ease-in-out;
+}
+
+@keyframes badgePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 .border-success {
@@ -169,4 +187,4 @@
     font-weight: 500;
 }
 </style>
-{% endblock %} 
+{% endblock %}

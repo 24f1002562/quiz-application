@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}My Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Your Quiz Performance Summary</h2>
+    
+    <!-- Basic Stats -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Stats</h5>
+                    <p>Total Quizzes Taken: {{ total_quizzes }}</p>
+                    <p>Average Score: {{ "%.1f"|format(average_score) }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Subject Performance</h5>
+                    <img src="data:image/png;base64,{{ subject_plot }}" 
+                         class="img-fluid" alt="Subject Performance">
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Performance</h5>
+                    <img src="data:image/png;base64,{{ recent_plot }}" 
+                         class="img-fluid" alt="Recent Performance">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

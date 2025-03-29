@@ -4,19 +4,24 @@ from .models import *
 from . import db
 from datetime import datetime
 from sqlalchemy import func
-from .quiz_attempt import QuizAttempt
 
 views = Blueprint('views',__name__)
 
 @views.route('/dashboard')
+@views.route('/user/dashboard')
 @login_required
-def home():
+def dashboard():
     if current_user.is_admin:
         return redirect(url_for('admin.dashboard'))
-    subjects = Subject.query.all()
-    attempted_quizzes = set(
-        score.quiz_id for score in Score.query.filter_by(user_id=current_user.id).all()
-    )
+    total_attempts = Score.query.filter_by(user_id=current_user.id).count()
+    if total_attempts > 0:
+        avg_score = db.session.query(func.avg(Score.total_scored))\
+            .filter_by(user_id=current_user.id).scalar() or 0
+        best_score = db.session.query(func.max(Score.total_scored))\
+            .filter_by(user_id=current_user.id).scalar() or 0
+    else:
+        avg_score = best_score = 0
+        
     recent_attempts = db.session.query(
         Score, Quiz, Chapter, Subject
     ).join(
@@ -30,63 +35,11 @@ def home():
     ).order_by(
         Score.timestamp_of_attempt.desc()
     ).limit(5).all()
-    total_attempts = Score.query.filter_by(user_id=current_user.id).count()
-    if total_attempts > 0:
-        avg_score = db.session.query(func.avg(Score.total_scored))\
-            .filter_by(user_id=current_user.id).scalar() or 0
-        best_score = db.session.query(func.max(Score.total_scored))\
-            .filter_by(user_id=current_user.id).scalar() or 0
-    else:
-        avg_score = best_score = 0
-    subject_performance = {}
-    for subject in subjects:
-        scores = db.session.query(Score)\
-            .join(Quiz)\
-            .join(Chapter)\
-            .filter(
-                Score.user_id == current_user.id,
-                Chapter.subject_id == subject.id
-            ).all()
-        
-        if scores:
-            avg = sum(score.total_scored for score in scores) / len(scores)
-            subject_performance[subject.name] = avg
-        else:
-            subject_performance[subject.name] = 0
-
-    return render_template(
-        "user/user_dashboard.html",
-        user=current_user,
-        subjects=subjects,
-        recent_attempts=recent_attempts,
-        attempted_quizzes=attempted_quizzes,
-        stats={
-            'total_attempts': total_attempts,
-            'avg_score': round(avg_score, 2),
-            'best_score': round(best_score, 2)
-        },
-        subject_performance=subject_performance
-    )
-
-@views.route('/user/dashboard')
-@login_required
-def dashboard():
-    if current_user.is_admin:
-        return redirect(url_for('admin.dashboard'))
-    
-    # Get basic statistics
-    total_attempts = Score.query.filter_by(user_id=current_user.id).count()
-    if total_attempts > 0:
-        avg_score = db.session.query(func.avg(Score.total_scored))\
-            .filter_by(user_id=current_user.id).scalar() or 0
-        best_score = db.session.query(func.max(Score.total_scored))\
-            .filter_by(user_id=current_user.id).scalar() or 0
-    else:
-        avg_score = best_score = 0
     
     return render_template(
         "user/dashboard.html",
         user=current_user,
+        recent_attempts=recent_attempts,
         stats={
             'total_attempts': total_attempts,
             'avg_score': round(avg_score, 2),
@@ -112,19 +65,11 @@ def subject_chapters(subject_id):
 def chapter_quizzes(chapter_id):
     chapter = Chapter.query.get_or_404(chapter_id)
     quizzes = Quiz.query.filter_by(Chapter_id=chapter_id).all()
-    
-    # Get attempted quizzes for current user
-    attempted_quizzes = {
-        score.quiz_id: score 
-        for score in Score.query.filter_by(user_id=current_user.id).all()
-    }
-    
-    return render_template(
-        'user/quizzes.html',
-        chapter=chapter,
-        quizzes=quizzes,
-        attempted_quizzes=attempted_quizzes
-    )
+    scores = Score.query.filter_by(user_id=current_user.id).all()
+    attempted_quizzes = {}
+    for score in scores:
+        attempted_quizzes[score.quiz_id] = score
+    return render_template('user/quizzes.html',chapter=chapter, quizzes=quizzes,attempted_quizzes=attempted_quizzes)
 
 @views.route('/user/recent-attempts')
 @login_required
@@ -142,22 +87,18 @@ def recent_attempts():
     ).order_by(
         Score.timestamp_of_attempt.desc()
     ).all()
-    
     return render_template('user/recent_attempts.html', attempts=attempts)
 
 @views.route('/quiz/<int:quiz_id>')
 @login_required
 def start_quiz(quiz_id):
-    # Check if user has already attempted this quiz
     previous_attempt = Score.query.filter_by(
         user_id=current_user.id,
         quiz_id=quiz_id
     ).first()
-    
     if previous_attempt:
         flash('You have already attempted this quiz. View your results in quiz history.', 'warning')
         return redirect(url_for('views.quiz_result', score_id=previous_attempt.id))
-    
     quiz = Quiz.query.get_or_404(quiz_id)
     questions = Question.query.filter_by(quiz_id=quiz_id).all()
     session['quiz_start_time'] = datetime.utcnow().timestamp()
@@ -169,8 +110,6 @@ def start_quiz(quiz_id):
 def submit_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     questions = Question.query.filter_by(quiz_id=quiz_id).all()
-    
-    # Create score entry at the beginning
     new_score = Score(
         quiz_id=quiz_id,
         user_id=current_user.id,
@@ -179,14 +118,10 @@ def submit_quiz(quiz_id):
     )
     db.session.add(new_score)
     db.session.flush()
-    
     score = 0
     total_questions = len(questions)
-    print("\n=== QUIZ SUBMISSION DEBUG ===")
-    
     for question in questions:
         user_answer = request.form.get(f'question_{question.id}')
-        
         print(f"\nQuestion ID: {question.id}")
         print(f"Question: {question.quest}")
         print(f"Options:")
@@ -196,29 +131,19 @@ def submit_quiz(quiz_id):
         print(f"4: {question.option4}")
         print(f"Stored correct answer in DB: {question.answer}")
         print(f"User submitted answer: {user_answer}")
-        
         if user_answer:
             try:
-                # Convert user's numeric answer to option format
                 user_option = f"option{user_answer}"
                 print(f"Converted user answer to: {user_option}")
                 print(f"Comparing with stored answer: {question.answer}")
-                
-                # Compare the string versions
                 if user_option == question.answer:
                     score += 1
-                    print("✓ CORRECT - Point awarded!")
-                else:
-                    print("✗ INCORRECT")
-                
-                # Save attempt
                 attempt = QuizAttempt(
                     score_id=new_score.id,
                     question_id=question.id,
                     user_answer=int(user_answer)
                 )
                 db.session.add(attempt)
-                
             except ValueError as e:
                 print(f"Error converting answers: {e}")
                 attempt = QuizAttempt(
@@ -382,4 +307,27 @@ def search():
         quizzes=quizzes,
         attempted_quizzes=attempted_quizzes,
         search_type=search_type
+    )
+
+@views.route('/available-quizzes')
+@login_required
+def available_quizzes():
+    # Get attempted quiz IDs for current user
+    attempted_quiz_ids = [
+        score.quiz_id 
+        for score in Score.query.filter_by(user_id=current_user.id).all()
+    ]
+    
+    # Get all quizzes that haven't been attempted
+    available_quizzes = db.session.query(Quiz, Chapter, Subject).join(
+        Chapter, Quiz.Chapter_id == Chapter.id
+    ).join(
+        Subject, Chapter.subject_id == Subject.id
+    ).filter(
+        ~Quiz.id.in_(attempted_quiz_ids) if attempted_quiz_ids else True
+    ).all()
+    
+    return render_template(
+        'user/available_quizzes.html',
+        quizzes=available_quizzes
     )

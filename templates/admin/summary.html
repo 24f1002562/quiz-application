@@ -1,0 +1,59 @@
+{% extends "admin/admin_layout.html" %}
+{% block title %}Admin Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Quiz System Summary</h2>
+    
+    <!-- Basic Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <h2>{{ stats.total_users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Quizzes</h5>
+                    <h2>{{ stats.total_quizzes }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Attempts</h5>
+                    <h2>{{ stats.total_attempts }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quiz Popularity</h5>
+                    <img src="data:image/png;base64,{{ quiz_plot }}" 
+                         class="img-fluid" alt="Quiz Attempts">
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Subject Performance Overview</h5>
+                    <img src="data:image/png;base64,{{ subject_plot }}" 
+                         class="img-fluid" alt="Subject Averages">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
